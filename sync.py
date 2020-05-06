@@ -1,6 +1,7 @@
 import argparse
 import base64
 import json
+import os
 
 import yaml
 
@@ -30,6 +31,13 @@ def write_adguardhome(adguardhome_path, cert, key):
         adguardhome_config['tls']['private_key'] = key
         f.seek(0)
         yaml.dump(adguardhome_config, f)
+        fix_permissions(f)
+
+
+def fix_permissions(adguardhome_fd):
+    os.chmod(adguardhome_fd, mode=644)
+    os.chown(adguardhome_fd, uid=1, uid=1)
+
 
 
 def run(traefik_path, adguardhome_path):
