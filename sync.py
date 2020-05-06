@@ -53,11 +53,11 @@ def main():
     parser.add_argument(
         '--traefik-path', 
         help='Path to traefik\'s acme.json file',
-        default='acme.json')
+        default='/acme.json')
     parser.add_argument(
         '--adguardhome-path', 
         help='Path to AdGuard Home\'s AdGuardHome.yaml file',
-        default='AdGuardHome.yaml')
+        default='/AdGuardHome.yaml')
     args = parser.parse_args()
     run(**vars(args))
 
