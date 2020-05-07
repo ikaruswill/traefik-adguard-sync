@@ -34,9 +34,9 @@ def write_adguardhome(adguardhome_path, cert, key):
         fix_permissions(f)
 
 
-def fix_permissions(adguardhome_fd):
-    os.chmod(adguardhome_fd, mode=644)
-    os.chown(adguardhome_fd, uid=1, gid=1)
+def fix_permissions(adguardhome_path):
+    # os.chmod(adguardhome_path, mode=0o644)
+    # os.chown(adguardhome_path, uid=0, gid=0)
 
 
 
