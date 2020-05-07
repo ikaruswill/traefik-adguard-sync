@@ -49,26 +49,27 @@ def run(traefik_path, adguardhome_path):
     cert, key = read_traefik(traefik_path)
     write_adguardhome(adguardhome_path, cert, key)
     fix_permissions(adguardhome_path)
-    
+
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='traefik-adguard-sync', 
+        prog='traefik-adguard-sync',
         description='Sync TLS Certificates from Traefik to Adguard')
     parser.add_argument(
-        '--traefik-path', 
+        '--traefik-path',
         help='Path to traefik\'s acme.json file',
         default='/acme.json')
     parser.add_argument(
-        '--adguardhome-path', 
+        '--adguardhome-path',
         help='Path to AdGuard Home\'s AdGuardHome.yaml file',
         default='/AdGuardHome.yaml')
     args = parser.parse_args()
     run(**vars(args))
 
+
 if __name__ == "__main__":
     logging.basicConfig(
-        level=logging.DEBUG, 
+        level=logging.DEBUG,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
     main()
