@@ -2,6 +2,7 @@ import argparse
 import base64
 import json
 import os
+import logging
 
 import yaml
 
@@ -15,6 +16,7 @@ def configure_yaml():
 
 
 def read_traefik(traefik_path):
+    logger.info('Reading Traefik configuration')
     with open(traefik_path, 'r') as f:
         acme_config = json.load(f)
     cert = base64.b64decode(
@@ -25,25 +27,29 @@ def read_traefik(traefik_path):
 
 
 def write_adguardhome(adguardhome_path, cert, key):
+    logger.info('Reading AdGuardHome configuration')
     with open(adguardhome_path, 'r+') as f:
         adguardhome_config = yaml.load(f, Loader=yaml.Loader)
         adguardhome_config['tls']['certificate_chain'] = cert
         adguardhome_config['tls']['private_key'] = key
         f.seek(0)
+        logger.info('Writing AdGuardHome configuration')
         yaml.dump(adguardhome_config, f)
-        fix_permissions(f)
 
 
 def fix_permissions(adguardhome_path):
+    logger.info('Fixing AdGuardHome permissions')
     # os.chmod(adguardhome_path, mode=0o644)
     # os.chown(adguardhome_path, uid=0, gid=0)
 
 
 
 def run(traefik_path, adguardhome_path):
+    logger.info('Initializing...')
     configure_yaml()
     cert, key = read_traefik(traefik_path)
     write_adguardhome(adguardhome_path, cert, key)
+    fix_permissions(adguardhome_path)
     
 
 def main():
@@ -62,4 +68,8 @@ def main():
     run(**vars(args))
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.DEBUG, 
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger()
     main()
