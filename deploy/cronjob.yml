@@ -1,0 +1,42 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: traefik-adguard-sync
+  labels:
+    app: traefik-adguard-sync
+spec:
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  schedule: 0 0 * * * 
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: traefik-adguard-sync
+            image: ikaruswill/traefik-adguard-sync:latest
+            imagePullPolicy: Always
+            resources:
+              requests:
+                memory: 50Mi
+                cpu: 100m
+              limits:
+                memory: 50Mi
+                cpu: 100m
+            volumeMounts:
+            - mountPath: /acme.json
+              name: traefik
+              subPath: acme.json
+              readOnly: true
+            - mountPath: /AdGuardHome.yaml
+              name: adguard
+              subPath: AdGuardHome.yaml
+          restartPolicy: OnFailure
+          volumes:
+          - name: traefik
+            persistentVolumeClaim:
+              claimName: traefik
+          - name: adguard
+            persistentVolumeClaim:
+              claimName: adguard
