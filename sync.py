@@ -39,9 +39,8 @@ def write_adguardhome(adguardhome_path, cert, key):
 
 def fix_permissions(adguardhome_path):
     logger.info('Fixing AdGuardHome permissions')
-    # os.chmod(adguardhome_path, mode=0o644)
-    # os.chown(adguardhome_path, uid=0, gid=0)
-
+    os.chmod(adguardhome_path, mode=0o644)
+    os.chown(adguardhome_path, uid=0, gid=0)
 
 
 def run(traefik_path, adguardhome_path):
