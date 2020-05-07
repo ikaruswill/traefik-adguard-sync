@@ -16,7 +16,7 @@ def configure_yaml():
 
 
 def read_traefik(traefik_path):
-    logger.info('Reading Traefik configuration')
+    logger.info(f'Reading Traefik configuration: {traefik_path}')
     with open(traefik_path, 'r') as f:
         acme_config = json.load(f)
     cert = base64.b64decode(
@@ -26,15 +26,41 @@ def read_traefik(traefik_path):
     return cert, private_key
 
 
+def has_changed(old, new, item):
+    def get_first_lines(s, n):
+        return '\n'.join(s.split('\n')[1:n + 1])
+    logger.info(f'Checking {item}')
+    if old != new:
+        logger.info(f'{item} has changed')
+        logger.info(f'Old: {get_first_lines(old, 1)}...')
+        logger.info(f'New: {get_first_lines(new, 1)}...')
+        return True
+    logger.info(f'{item} has not changed')
+
+
 def write_adguardhome(adguardhome_path, cert, key):
-    logger.info('Reading AdGuardHome configuration')
+    logger.info(f'Reading AdGuardHome configuration: {adguardhome_path}')
     with open(adguardhome_path, 'r+') as f:
         adguardhome_config = yaml.load(f, Loader=yaml.Loader)
-        adguardhome_config['tls']['certificate_chain'] = cert
-        adguardhome_config['tls']['private_key'] = key
-        f.seek(0)
-        logger.info('Writing AdGuardHome configuration')
-        yaml.dump(adguardhome_config, f)
+        old_cert = adguardhome_config['tls']['certificate_chain']
+        old_key = adguardhome_config['tls']['private_key']
+        is_dirty = False
+
+        if has_changed(old_cert, cert, 'Certificate chain'):
+            adguardhome_config['tls']['certificate_chain'] = cert
+            is_dirty = True
+        if has_changed(old_key, key, 'Private key'):
+            adguardhome_config['tls']['private_key'] = key
+            is_dirty = True
+
+        if is_dirty:
+            logger.info('Changes detected')
+            logger.info(f'Writing AdGuardHome configuration: {adguardhome_path}')
+            f.seek(0)
+            yaml.dump(adguardhome_config, f)
+            fix_permissions(adguardhome_path)
+        else:
+            logger.info('No changes detected')
 
 
 def fix_permissions(adguardhome_path):
@@ -48,7 +74,7 @@ def run(traefik_path, adguardhome_path):
     configure_yaml()
     cert, key = read_traefik(traefik_path)
     write_adguardhome(adguardhome_path, cert, key)
-    fix_permissions(adguardhome_path)
+    logger.info('Done')
 
 
 def main():
