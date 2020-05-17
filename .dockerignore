@@ -1,2 +1,6 @@
 .git
 .gitignore
+.drone.yml
+.flake8
+manifest.tmpl
+Dockerfile

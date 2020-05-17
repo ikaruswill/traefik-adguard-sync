@@ -1,16 +1,19 @@
 kind: pipeline
-name: default
+name: linux-arm
 type: kubernetes
 
 platform:
   os: linux
   arch: arm
 
+clone:
+  depth: 1
+
 steps:
 - name: publish
   image: plugins/docker
   environment:
-    PLUGIN_MTU: 1450
+    PLUGIN_MTU: 1440
   resources:
     requests:
       cpu: 500
@@ -21,11 +24,82 @@ steps:
   settings:
     repo: ikaruswill/traefik-adguard-sync
     auto_tag: true
+    auto_tag_suffix: linux-arm
     username:
       from_secret: docker_username
     password:
       from_secret: docker_password
+node_selector:
+  kubernetes.io/arch: arm
+trigger:
+  ref:
+  - refs/heads/master
+  - refs/tags/*
 
+---
+kind: pipeline
+name: linux-arm64
+type: kubernetes
+
+platform:
+  os: linux
+  arch: arm64
+
+clone:
+  depth: 1
+
+steps:
+- name: publish
+  image: plugins/docker
+  environment:
+    PLUGIN_MTU: 1440
+  resources:
+    requests:
+      cpu: 500
+      memory: 100MiB
+    limits:
+      cpu: 500
+      memory: 100MiB
+  settings:
+    repo: ikaruswill/traefik-adguard-sync
+    auto_tag: true
+    auto_tag_suffix: linux-arm64
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+node_selector:
+  kubernetes.io/arch: arm64
+
+trigger:
+  ref:
+  - refs/heads/master
+  - refs/tags/*
+
+---
+kind: pipeline
+name: manifests
+type: kubernetes
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+- name: manifest
+  pull: always
+  image: plugins/manifest
+  settings:
+    auto_tag: true
+    ignore_missing: true
+    spec: manifest.tmpl
+    platforms:
+    - linux/arm
+    - linux/arm64
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
 node_selector:
   kubernetes.io/arch: arm
 
@@ -33,6 +107,10 @@ trigger:
   ref:
   - refs/heads/master
   - refs/tags/*
+
+depends_on:
+- linux-arm
+- linux-arm64
 
 ---
 kind: secret
