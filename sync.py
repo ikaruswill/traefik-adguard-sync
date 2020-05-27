@@ -3,7 +3,7 @@ import base64
 import json
 import logging
 import os
-
+import shutil
 import yaml
 
 
@@ -55,6 +55,7 @@ def write_adguardhome(adguardhome_path, cert, key):
 
     if is_dirty:
         logger.info('Changes detected')
+        create_backup(adguardhome_path)
         logger.info(f'Writing AdGuardHome configuration: {adguardhome_path}')
         with open(adguardhome_path, 'w') as f:
             yaml.dump(adguardhome_config, f)
@@ -67,6 +68,15 @@ def fix_permissions(adguardhome_path):
     logger.info('Fixing AdGuardHome permissions')
     os.chmod(adguardhome_path, mode=0o644)
     os.chown(adguardhome_path, uid=0, gid=0)
+
+
+def create_backup(adguardhome_path):
+    logger.info(f'Backing up AdGuardHome configuration: {adguardhome_path}')
+    dirname, filename = os.path.split(adguardhome_path)
+    name, ext = os.path.splitext(filename)
+    backup_path = os.path.join(dirname, f'{name}-backup{ext}')
+    shutil.copy2(adguardhome_path, backup_path)
+    logger.info(f'AdGuardHome configuration backed up to : {backup_path}')
 
 
 def run(traefik_path, adguardhome_path):
