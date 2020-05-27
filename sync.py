@@ -40,27 +40,27 @@ def has_changed(old, new, item):
 
 def write_adguardhome(adguardhome_path, cert, key):
     logger.info(f'Reading AdGuardHome configuration: {adguardhome_path}')
-    with open(adguardhome_path, 'r+') as f:
+    with open(adguardhome_path, 'r') as f:
         adguardhome_config = yaml.load(f, Loader=yaml.Loader)
-        old_cert = adguardhome_config['tls']['certificate_chain']
-        old_key = adguardhome_config['tls']['private_key']
-        is_dirty = False
+    old_cert = adguardhome_config['tls']['certificate_chain']
+    old_key = adguardhome_config['tls']['private_key']
+    is_dirty = False
 
-        if has_changed(old_cert, cert, 'Certificate chain'):
-            adguardhome_config['tls']['certificate_chain'] = cert
-            is_dirty = True
-        if has_changed(old_key, key, 'Private key'):
-            adguardhome_config['tls']['private_key'] = key
-            is_dirty = True
+    if has_changed(old_cert, cert, 'Certificate chain'):
+        adguardhome_config['tls']['certificate_chain'] = cert
+        is_dirty = True
+    if has_changed(old_key, key, 'Private key'):
+        adguardhome_config['tls']['private_key'] = key
+        is_dirty = True
 
-        if is_dirty:
-            logger.info('Changes detected')
-            logger.info(f'Writing AdGuardHome configuration: {adguardhome_path}')
-            f.seek(0)
+    if is_dirty:
+        logger.info('Changes detected')
+        logger.info(f'Writing AdGuardHome configuration: {adguardhome_path}')
+        with open(adguardhome_path, 'w') as f:
             yaml.dump(adguardhome_config, f)
-            fix_permissions(adguardhome_path)
-        else:
-            logger.info('No changes detected')
+        fix_permissions(adguardhome_path)
+    else:
+        logger.info('No changes detected')
 
 
 def fix_permissions(adguardhome_path):
