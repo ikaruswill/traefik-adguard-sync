@@ -18,3 +18,8 @@ manifests:
       architecture: arm
       os: linux
       variant: v7
+  -
+    image: ikaruswill/traefik-adguard-sync:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}linux-amd64
+    platform:
+      architecture: amd64
+      os: linux
